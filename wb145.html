@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="zh-CN"><head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>三师工作台 v2.0</title>
 <style>
 :root{--bg:#f4f6fb;--card:#fff;--ink:#1d2433;--sub:#7a8199;--acc:#3b6ef5;--ok:#1a9e5c;--bad:#e05252;--mid:#e8a13c;--line:#e7e9f2}
@@ -47,7 +47,17 @@ summary{font-size:14px;cursor:pointer;line-height:1.5}
 .s2h{font-size:12px;color:var(--sub);padding:8px 12px 2px}
 #s2out .r{padding:9px 12px;border-bottom:1px solid var(--line);cursor:pointer;font-size:13px;line-height:1.5}
 #s2out .r:active{background:var(--bg)}
-</style></head><body>
+</style>
+<style id="s29mobile">
+@media (max-width:900px){
+  body{overflow-x:hidden!important;}
+  div[style*="position:fixed"],div[style*="position: fixed"]{
+    max-width:94vw!important;box-sizing:border-box!important;left:2vw!important;
+  }
+  table,pre,code{max-width:92vw!important;overflow-x:auto!important;}
+}
+</style>
+</head><body>
 <header><h1>三师工作台 <span style="font-size:12px;opacity:.8">v2.0</span></h1><div class="s" id="hSub">脚本加载中…</div></header>
 <div class="wrap">
 <section id="pgStudy">
