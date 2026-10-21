@@ -842,7 +842,7 @@ wrap.innerHTML='<div id="aiTop"><b>🤖 AI老师</b>'+
 document.body.appendChild(wrap);
 var log=gid('aiLog'),inBox=gid('aiIn');
 function hi(){log.innerHTML='';var d=document.createElement('div');
- d.className='m a';d.textContent='我是CPA辅导AI(本机代理模式)。'+
+ d.className='m a';d.textContent='我是CPA辅导AI(云端模式)。'+
  '选中工作台文字再点🤖自动带入; 也可直接输入问题。';
  log.appendChild(d)}
 hi();
@@ -868,7 +868,7 @@ function send(){var q=inBox.value.trim();
   busy=false;log.scrollTop=log.scrollHeight})
  .catch(function(e){wait.className='m err';
   wait.textContent='出错了: '+e.message+
-   '\n(若含 Failed to fetch = 代理没开: 跑 s19_proxy.py 并保持窗口开着)';
+   '\n(若含 403请先登录 = 令牌过期: ☁️退出重新登录再问)';
   busy=false})}
 gid('aiSend').onclick=send;
 inBox.addEventListener('keydown',function(e){
