@@ -816,7 +816,8 @@ function gid(x){return document.getElementById(x)}
 var CLOUD='https://johsavpaqsisjozicurp.supabase.co/functions/v1/glm';
 var AK='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpvaHNhdnBhcXNpc2pvemljdXJwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIzOTk3ODEsImV4cCI6MjEwNzk3NTc4MX0.UxSalWjb3qlxQMcjmkNZI19lk60S9N9YLEGtYjJYeDk';
 var API=(function(){if(location.protocol!=='file:')return CLOUD;try{var x=new XMLHttpRequest();x.open('HEAD','http://127.0.0.1:8765/',false);x.send();return 'http://127.0.0.1:8765/glm'}catch(e){return CLOUD}})();
-var AHEAD={'Content-Type':'application/json'};if(API===CLOUD)AHEAD.Authorization='Bearer '+AK;
+var AHEAD={'Content-Type':'application/json'};var SAT='';try{var _k=localStorage.getItem('sb-johsavpaqsisjozicurp-auth-token');if(!_k){for(var _i=0;_i<localStorage.length;_i++){var _n=localStorage.key(_i);if(_n.indexOf('sb-')===0&&_n.indexOf('-auth-token')>0){_k=localStorage.getItem(_n);break}}}if(_k){var _s=JSON.parse(_k);if(_s&&_s.access_token&&_s.access_token.length>40)SAT=_s.access_token}}catch(e){}
+if(API===CLOUD)AHEAD.Authorization='Bearer '+(SAT||AK);
 var SYS='你是注册会计师(CPA)考试辅导老师。中文回答; 先给结论再给解析; '+
  '计算题分步列算式; 涉及准则给条号; 默认500字内, 用户追问再展开。';
 var msgs=[],busy=false;
