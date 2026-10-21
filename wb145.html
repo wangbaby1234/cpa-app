@@ -893,4 +893,81 @@ a[0]='https://johsavpaqsisjozicurp.supabase.co/functions/v1/app?doc='+encodeURIC
 return f.apply(this,a)}}
 if(LAN){window.fileUrl=function(){
 return 'data:text/plain,'+encodeURIComponent('原PDF仅电脑版可看; 手机资料库可读讲义文本')}}})();
-</script></body></html>
+</script>
+<script id="s31autorefresh">
+(function(){
+  var SU="https://johsavpaqsisjozicurp.supabase.co";
+  var KEY="sb-johsavpaqsisjozicurp-auth-token";  /* s31a实测键名 */
+  var AKP="";
+  try{var ts=document.getElementsByTagName("script");
+    for(var i=0;i<ts.length&&!AKP;i++){var m=(ts[i].textContent||"").match(/eyJ[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}/);if(m)AKP=m[0];}
+  }catch(e){}
+  function sess(){
+    try{var raw=localStorage.getItem(KEY);
+      if(!raw){for(var i=0;i<localStorage.length;i++){var n=localStorage.key(i);
+        if(n.indexOf("sb-")===0&&n.indexOf("-auth-token")>0){KEY=n;raw=localStorage.getItem(n);break;}}}
+      if(!raw)return null;var s=JSON.parse(raw);
+      if(s&&s.access_token)return s;if(s&&s.currentSession)return s.currentSession;return null;
+    }catch(e){return null}
+  }
+  function save(j){
+    try{if(!j.expires_at&&j.expires_in)j.expires_at=Math.floor(Date.now()/1000)+j.expires_in;
+      var old={};try{old=JSON.parse(localStorage.getItem(KEY)||"{}")||{}}catch(e){}
+      for(var k in j)old[k]=j[k];
+      localStorage.setItem(KEY,JSON.stringify(old));return true;
+    }catch(e){return false}
+  }
+  var busy=null;
+  function man(ss){
+    if(busy)return busy;
+    busy=fetch(SU+"/auth/v1/token?grant_type=refresh_token",{method:"POST",
+      headers:{"Content-Type":"application/json","apikey":AKP},
+      body:JSON.stringify({refresh_token:ss.refresh_token})})
+      .then(function(r){return r.ok?r.json():null})
+      .then(function(j){busy=null;return j&&j.access_token?save(j):false})
+      .catch(function(){busy=null;return false});
+    return busy;
+  }
+  function renew(force){
+    var s=sess();if(!s||!s.refresh_token)return Promise.resolve(false);
+    var exp=(s.expires_at||0)*1000;
+    if(!force&&exp&&exp-Date.now()>600000)return Promise.resolve(true);
+    if(window.sb&&window.sb.auth&&window.sb.auth.refreshSession){
+      return window.sb.auth.refreshSession().then(function(r){return !!(r&&r.data&&r.data.session)}).catch(function(){return man(s)});
+    }
+    return man(s);
+  }
+  var of=window.fetch;
+  window.fetch=function(input,init){
+    try{
+      var url=(typeof input==="string")?input:(input&&input.url)||"";
+      if(url.indexOf("/functions/v1/")>-1){
+        init=init||{};
+        var h=new Headers(init.headers||(input&&input.headers)||{});
+        var s=sess();
+        if(s&&s.access_token){h.set("Authorization","Bearer "+s.access_token);init.headers=h;}
+        return of.call(window,input,init).then(function(res){
+          if(res.status===401||res.status===403){
+            var s2=sess();
+            if(s2&&s2.refresh_token){
+              return renew(true).then(function(ok){
+                if(!ok)return res;
+                var s3=sess();
+                if(s3&&s3.access_token){
+                  try{h.set("Authorization","Bearer "+s3.access_token);init.headers=h;return of.call(window,input,init);}catch(e){return res;}
+                }
+                return res;});
+            }
+          }
+          return res;});
+      }
+    }catch(e){}
+    return of.apply(window,arguments);
+  };
+  setInterval(function(){renew(false)},30*60*1000);
+  document.addEventListener("visibilitychange",function(){if(!document.hidden)renew(false)});
+  console.log("s31 on");
+})();
+</script>
+
+</body></html>
