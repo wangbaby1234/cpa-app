@@ -57,7 +57,7 @@ summary{font-size:14px;cursor:pointer;line-height:1.5}
   table,pre,code{max-width:92vw!important;overflow-x:auto!important;}
 }
 </style>
-</head><body>
+<script>/*s34js*/window.natcmp=window.natcmp||function(a,b){var f=function(x){return String(x).toLowerCase().replace(/\d+/g,function(m){return ('0000000000'+m).slice(-10)})};a=f(a);b=f(b);return a<b?-1:(a>b?1:0)};</script></head><body>
 <header><h1>三师工作台 <span style="font-size:12px;opacity:.8">v2.0</span></h1><div class="s" id="hSub">脚本加载中…</div></header>
 <div class="wrap">
 <section id="pgStudy">
@@ -488,10 +488,10 @@ document.body.appendChild(bar);document.body.appendChild(toc);
 toc.addEventListener('click',function(e){if(e.target.id==='s6toc'||e.target.id==='s6x')toc.classList.remove('on')});
 function build(){
  var body=toc.querySelector('#s6body');if(body.dataset.done)return;body.dataset.done=1;
- var subs={};(window.WB_IDX||[]).forEach(function(c){var s=c.s||'\u672a\u5206\u79d1',g=(c.g||'\u672a\u5206\u7ec4').replace(/\s*p\.\d+\s*$/,'');(subs[s]=subs[s]||{});(subs[s][g]=subs[s][g]||[]).push(c)});
+ var subs={};(window.WB_IDX||[]).forEach(function(c){var s=c.s||'\u672a\u5206\u79d1',g=(c.g||'\u672a\u5206\u7ec4').replace(/\s*p\.\d+\s*$/,'');(subs[s]=subs[s]||{});if(g.length>22||/[\u3002\uff1b\uff1f\uff01]/.test(g)||/^\d+\.\d/.test(g))g="\u25c7\u5176\u4ed6";(subs[s][g]=subs[s][g]||[]).push(c)});
  var h='';Object.keys(subs).sort().forEach(function(s){var secs=subs[s],n=0;Object.keys(secs).forEach(function(g){n+=secs[g].length});
   h+='<details><summary><b>'+s+'</b> ('+n+')</summary>';
-  Object.keys(secs).sort().forEach(function(g){var a=secs[g];
+  Object.keys(secs).sort(window.natcmp||undefined).forEach(function(g){var a=secs[g];
    h+='<details><summary>'+g+' ('+a.length+')</summary><ul>'+a.map(function(c){return '<li>'+c.t.replace(/</g,'&lt;')+'</li>'}).join('')+'</ul></details>'});
   h+='</details>'});
  body.innerHTML=h||'\u672a\u627e\u5230\u6570\u636e\u6e90';
@@ -649,7 +649,7 @@ refresh();}
  border:1px solid #ccc;font:12px system-ui;user-select:none}
 #docsSubs div:hover{background:#f0f0f0}
 #docsSubs div.on{background:#3a5cad;color:#fff;border-color:#3a5cad}
-</style><script id="s17d">(function(){
+</style><style id="s34mob">/*s34mob*/@media (max-width:720px){#docsPanel #docsL{left:0;right:0;width:auto;top:46px;height:45%;bottom:auto;border-bottom:1px solid #ccc}#docsPanel #docsR{left:0;top:calc(46px + 45%)}#docsPanel #docsView .pg{padding:10px 12px}}</style><script id="s17d">(function(){
 function gid(x){return document.getElementById(x)}
 function loadJs(src,cb){var s=document.createElement('script');
  s.src=src;s.onload=cb;document.head.appendChild(s)}
