@@ -213,7 +213,7 @@ function showCard(){sel=new Set();cur=null;
  cur=sess[si];const x=cur;g("pos").textContent=(si+1)+" / "+sess.length;
  if(x._t==="e"){renderEx(x);return}
  g("qCard").innerHTML=tags(x)+'<div class="content">'+esc(x.content||"(无正文)")+'</div>'+(x.title?'<div class="muted" style="margin-top:8px">'+esc(x.title)+'</div>':"");
- g("aCard").innerHTML='<button class="btn bad" onclick="gradeBtn(0)">忘了</button><button class="btn mid" onclick="gradeBtn(1)">模糊</button><button class="btn ok" onclick="gradeBtn(2)">认识</button><button class="btn gray" onclick="toggleStar()" id="starBtn">'+starTxt()+'</button><button class="btn gray" onclick="b1Hook()">💡 钩子</button><div id="b1Box" style="margin-top:10px"></div>'}
+ g("aCard").innerHTML='<button class="btn bad" onclick="gradeBtn(0)">忘了</button><button class="btn mid" onclick="gradeBtn(1)">模糊</button><button class="btn ok" onclick="gradeBtn(2)">认识</button><button class="btn gray" onclick="toggleStar()" id="starBtn">'+starTxt()+'</button><div id="b1Box" style="margin-top:10px"></div>';setTimeout(function(){if(window.b1Auto)window.b1Auto()},80)}
 function exKind(x){if(x.mode==="reveal")return"subj";const a=String(x.answer||"").trim();
  if(/^[对错√×]$/.test(a))return"judge";
  if(/^[A-Ha-h]{1,6}$/.test(a)&&Array.isArray(x.options)&&x.options.length>1)return"choice";
@@ -881,6 +881,22 @@ btn.onclick=function(){
  wrap.classList.add('open');
  setTimeout(function(){inBox.focus()},260)};
 document.body.appendChild(btn);
+/*s37aid*/
+window.b1Auto=function(){b1Hook(false,true)};
+function b1Ctx(){try{var per={},seen=0,today=new Date().toISOString().slice(0,10);
+ DB.k.forEach(function(x){var p=PR[x.id];if(p&&p.box){seen++;if(!per[x.s])per[x.s]=[0,0];if(p.box<=1)per[x.s][0]++;if(p.due&&p.due<=today)per[x.s][1]++}});
+ var rows=[];for(var k in per){if(per[k][0]||per[k][1])rows.push(k+'(薄弱'+per[k][0]+'/到期'+per[k][1]+')')}
+ return '【学员学情快照】数据包v'+(DB.ver||'?')+'·共'+(DB.k.length+DB.e.length)+'卡; 知识卡已学'+seen+'张; 今日新卡'+(TODAY.newDone||0)+'/'+(SET.daily||0)+'; 薄弱与到期分布: '+(rows.join('；')||'暂无')+'。请优先围绕薄弱科目给具体建议(科目+数量+顺序)。'
+}catch(e){return ''}}
+var __of37=window.fetch;
+window.fetch=function(u,o){try{if(u===API&&o&&typeof o.body==='string'&&o.body.indexOf('glm-4-flash')>-1){var j=JSON.parse(o.body);if(j&&j.messages&&j.messages.length){j.messages=[{role:'system',content:b1Ctx()}].concat(j.messages);o.body=JSON.stringify(j)}}}catch(e){}return __of37.apply(this,arguments)};
+try{(function(){var row=document.createElement('div');row.style.cssText='display:flex;gap:6px;margin:6px 0;flex-wrap:wrap';
+function mk(t,q){var b=document.createElement('button');b.textContent=t;b.className='btn gray';b.style.cssText='font-size:12px;padding:4px 10px';b.onclick=function(){if(busy){toast('AI回复中…');return}inBox.value=q;send()};row.appendChild(b)}
+mk('📋 今日方案','请结合我的学情快照, 给我今天的个性化学习方案: 具体到科目、新卡数量、复习内容、顺序, 40分钟内可完成。');
+mk('🎯 攻薄弱','请根据学情快照找出我最薄弱的科目, 分析原因, 给一套加强训练方案(看什么、背什么、练什么)。');
+mk('📈 学情分析','请分析我的学习数据: 进度是否健康、薄弱点在哪、按当前节奏能否按期完成备考, 给出调整建议。');
+inBox.parentNode.insertBefore(row,inBox)})();}catch(e){}
+try{var _ab=document.getElementById('aiBtn');if(_ab)_ab.title='AI学习助手(已自动携带你的学情数据)';}catch(e){}
 /*s36b1*/
 function b1Day(){return new Date().toISOString().slice(0,10)}
 function b1Used(){var d=b1Day();if(localStorage.getItem('b1Day')!==d){localStorage.setItem('b1Day',d);localStorage.setItem('b1Cnt','0')}return +(localStorage.getItem('b1Cnt')||0)}
@@ -888,13 +904,13 @@ function b1Add(){localStorage.setItem('b1Cnt',(b1Used()+1)+'')}
 function aidGet(k){return idbOpen().then(function(d){if(!d)return null;return new Promise(function(r){try{var t=d.transaction('kv','readonly');var q=t.objectStore('kv').get(k);q.onsuccess=function(){r(q.result||null)};q.onerror=function(){r(null)}}catch(e){r(null)}})})}
 function aidPut(k,v){return idbOpen().then(function(d){if(!d)return;try{var t=d.transaction('kv','readwrite');t.objectStore('kv').put(v,k)}catch(e){}})}
 function b1Esc(x){return String(x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
-function b1Show(h){var b=document.getElementById('b1Box');if(b)b.innerHTML=h}
-function b1Card(t){b1Show('<div style="background:#f6f6ee;border:1px solid #ddd;border-radius:8px;padding:10px 12px;font-size:13px;line-height:1.8;white-space:pre-wrap">'+b1Esc(t)+'</div><div style="margin-top:6px;text-align:right;font-size:12px;color:#678;cursor:pointer" onclick="b1Hook(true)">🔄 换一个</div>')}
+function b1Show(h,id){var b=document.getElementById('b1Box');if(!b)return;if(id&&typeof cur!=='undefined'&&cur&&cur.id!==id)return;b.innerHTML=h}
+function b1Card(t,id){b1Show('<div style="background:#f6f6ee;border:1px solid #ddd;border-radius:8px;padding:10px 12px;font-size:13px;line-height:1.8;white-space:pre-wrap">'+b1Esc(t)+'</div><div style="margin-top:6px;text-align:right;font-size:12px;color:#678;cursor:pointer" onclick="b1Hook(true)">🔄 换一个</div>',id)}
 function b1Ask(model,sys,usr){return fetch(API,{method:'POST',headers:AHEAD,body:JSON.stringify({model:model,messages:[{role:'system',content:sys},{role:'user',content:usr}]})}).then(function(r){return r.json().then(function(j){if(!r.ok){var m=(j.error&&j.error.message)||('HTTP '+r.status);throw new Error(m)}return j})}).then(function(j){return (j.choices[0].message.content||'').trim()})}
-window.b1Hook=function(force){
+window.b1Hook=function(force,silent){
  var c=(typeof cur!=='undefined')?cur:window.cur;
- if(!c||!c.id){toast('先翻到一张卡再点钩子');return}
- var key='aid_'+c.id;
+ if(!c||!c.id){if(!silent)toast('先翻到一张卡再点钩子');return}
+ var key='aid_'+c.id;var myId=c.id;
  var head=c.t||c.title||c.id||'';
  var front=c.q||c.f||c.front||'';
  var back=c.a||c.b||c.answer||'';
@@ -902,13 +918,13 @@ window.b1Hook=function(force){
  var usr='知识点: '+head+(front?('\n正面: '+front):'')+(back?('\n答案: '+back):'');
  var sys='你是CPA记忆教练。针对知识点输出四件套, 总长≤220字, 格式:\n【本质】一句话核心逻辑\n【口诀】一个好用的联想/口诀/图像\n【例子】一个极简算例或情景\n【易混】最易混的概念+一句区别\n不要客套, 不要重复题面。';
  aidGet(key).then(function(v){
-  if(v&&!force){b1Card(v);return}
-  if(b1Used()>=50){b1Show('<div style="color:#a00;font-size:13px">今日AI生成已满50次, 明天再来; 已生成的钩子随时可点开看。</div>');return}
-  b1Show('<div style="color:#666;font-size:13px">⏳ AI私教思考中…约10~30秒</div>');
+  if(v&&!force){b1Card(v,myId);return}
+  if(b1Used()>=50){b1Show('<div style="color:#899;font-size:12px">今日AI额度(50次)已用完, 未定制的卡明日自动补齐; 已生成的仍秒开。</div>',myId);return}
+  b1Show('<div style="color:#99a;font-size:12px">⏳ AI私教正在为这张卡定制四件套…约10~30秒, 只生成一次, 以后秒开</div>',myId);
   b1Ask('glm-4.5-air',sys,usr).catch(function(e){return b1Ask('glm-4-flash',sys,usr)}).then(function(t){
    if(!t)throw new Error('空回复');
-   b1Add();aidPut(key,t);b1Card(t);
-  }).catch(function(e){b1Show('<div style="color:#a00;font-size:13px">生成失败: '+b1Esc(String(e.message||e))+'</div>')});
+   b1Add();aidPut(key,t);b1Card(t,myId);
+  }).catch(function(e){b1Show('<div style="color:#a00;font-size:13px">生成失败: '+b1Esc(String(e.message||e))+'</div>',myId)});
  });
 };
 })();
