@@ -482,7 +482,7 @@ b2.onclick=function(){var o={_meta:{date:new Date().toISOString(),ver:'v2.0-beta
 var b3=document.createElement('button');b3.title='\u7ae0\u8282\u76ee\u5f55';b3.textContent='\u2630';
 var toc=document.createElement('div');toc.id='s6toc';
 toc.innerHTML='<div class="panel"><b>\u7ae0\u8282\u76ee\u5f55</b> <span id="s6x" style="float:right;cursor:pointer">\u2715</span><div id="s6body">\u8f7d\u5165\u4e2d\u2026</div></div>';
-b3.onclick=function(){toc.classList.toggle('on')};
+b3.onclick=function(){toc.classList.toggle('on');try{build()}catch(e){}};/*s33toc*/;
 bar.appendChild(b1);bar.appendChild(b2);bar.appendChild(b3);
 document.body.appendChild(bar);document.body.appendChild(toc);
 toc.addEventListener('click',function(e){if(e.target.id==='s6toc'||e.target.id==='s6x')toc.classList.remove('on')});
