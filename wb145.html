@@ -104,7 +104,7 @@ summary{font-size:14px;cursor:pointer;line-height:1.5}
 <section id="pgDash" class="hidden"><!--s40-->
  <div class="card"><h3>📊 每日学习看板</h3>
   <div id="dashHead"></div>
-  <div id="dashBars" style="margin-top:6px"></div>
+  <div class="muted" style="font-size:11px;margin:6px 0 2px">各科进度=已学÷该科总数；"薄弱N"=该科有N张你忘了/模糊过的卡, 🎯特训专治它们</div><div id="dashBars" style="margin-top:2px"></div>
   <div id="dashAI" style="margin-top:10px;background:#f6f6ee;border:1px solid #ddd;border-radius:8px;padding:10px 12px;font-size:13px;line-height:1.8;white-space:pre-wrap"></div>
   <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">
    <button class="btn gray" style="font-size:12px;padding:5px 10px" onclick="briefGen(true)">🔄 重写简报</button>
@@ -920,19 +920,19 @@ function briefCalc(){var t=b1Day(),tot=0,seen=0,due=0,per={};
 function briefKey(){return 'brief_'+b1Day()}
 function briefTxt(){try{var v=localStorage.getItem(briefKey());if(v)return (JSON.parse(v).t)||''}catch(e){}return ''}
 function renderDash(){var d=briefCalc(),h='',bh='';
- h+='<div style="font-size:13px;line-height:2">📅 <b>'+d.day+'</b> · 总进度 <b>'+d.seen+'</b>/'+d.tot+' ('+(d.tot?Math.round(d.seen/d.tot*100):0)+'%) · 今日新卡 <b>'+(TODAY.newDone||0)+'</b>/'+(SET.daily||0)+' · 到期待复习 <b>'+d.due+'</b></div>';
- d.rows.slice(0,8).forEach(function(r){var pct=r[0]?Math.round(r[1]/r[0]*100):0;
-  bh+='<div style="display:flex;align-items:center;gap:6px;margin:3px 0"><span style="width:56px;font-size:12px">'+esc(r[0])+'</span><div style="flex:1;height:8px;background:#eef;border-radius:4px;overflow:hidden"><div style="width:'+pct+'%;height:100%;background:linear-gradient(90deg,#35deF5,#7a4df0)"></div></div><span style="width:110px;font-size:11px;color:#789">'+pct+'%'+(r[3]?'·薄弱'+r[3]:'')+'</span></div>'});
+ h+='<div style="font-size:13px;line-height:2">📅 <b>'+d.day+'</b> · 总进度 <b>'+d.seen+'</b>/'+d.tot+' ('+(d.tot?(d.seen/d.tot*100).toFixed(1):0)+'%) · 今日新卡 <b>'+(TODAY.newDone||0)+'</b>/'+(SET.daily||0)+' · 到期待复习 <b>'+d.due+'</b></div>';
+ h+='<div class="muted" style="font-size:11px">总进度=累计学过÷全库'+d.tot+'张 · 今日新卡=今日额度用了几张(目标在规划页可调) · 到期=今天该还的复习债(背卡里自动排最前)</div>';d.rows.slice(0,8).forEach(function(r){var pct=r[1]?Math.round(r[2]/r[1]*100):0;/*s41fix*/
+  bh+='<div style="display:flex;align-items:center;gap:6px;margin:3px 0"><span style="width:56px;font-size:12px">'+esc(r[0])+'</span><div style="flex:1;height:8px;background:#eef;border-radius:4px;overflow:hidden"><div style="width:'+pct+'%;height:100%;background:linear-gradient(90deg,#35deF5,#7a4df0)"></div></div><span style="width:128px;font-size:11px;color:#789">'+r[2]+'/'+r[1]+'·'+pct+'%'+(r[3]?'·薄弱'+r[3]:'')+'</span></div>'});
  var he=g("dashHead"),be=g("dashBars");if(he)he.innerHTML=h;if(be)be.innerHTML=bh;
  var ta=g("dashAI");if(ta)ta.textContent=briefTxt()||'⏳ 教练正在写今日简报…约10~30秒';
  if(!briefTxt())briefGen(false)}
 window.renderDash=renderDash;
 function briefRender(){var b=document.getElementById('briefBody');if(!b)return;
  var d=briefCalc(),h='';
- h+='<div style="font-size:13px;line-height:1.9">📅 <b>'+d.day+'</b> · 总进度 <b>'+d.seen+'</b>/'+d.tot+' ('+(d.tot?Math.round(d.seen/d.tot*100):0)+'%) · 今日新卡 <b>'+(TODAY.newDone||0)+'</b>/'+(SET.daily||0)+' · 到期待复习 <b>'+d.due+'</b></div>';
+ h+='<div style="font-size:13px;line-height:1.9">📅 <b>'+d.day+'</b> · 总进度 <b>'+d.seen+'</b>/'+d.tot+' ('+(d.tot?(d.seen/d.tot*100).toFixed(1):0)+'%) · 今日新卡 <b>'+(TODAY.newDone||0)+'</b>/'+(SET.daily||0)+' · 到期待复习 <b>'+d.due+'</b></div>';
  h+='<div style="margin-top:8px">';
- d.rows.slice(0,6).forEach(function(r){var pct=r[0]?Math.round(r[1]/r[0]*100):0;
-  h+='<div style="display:flex;align-items:center;gap:6px;margin:3px 0"><span style="width:56px;font-size:12px">'+esc(r[0])+'</span><div style="flex:1;height:8px;background:#eef;border-radius:4px;overflow:hidden"><div style="width:'+pct+'%;height:100%;background:linear-gradient(90deg,#35deF5,#7a4df0)"></div></div><span style="width:104px;font-size:11px;color:#789">'+pct+'%'+(r[3]?'·薄弱'+r[3]:'')+'</span></div>'});
+ d.rows.slice(0,6).forEach(function(r){var pct=r[1]?Math.round(r[2]/r[1]*100):0;/*s41fix*/
+  h+='<div style="display:flex;align-items:center;gap:6px;margin:3px 0"><span style="width:56px;font-size:12px">'+esc(r[0])+'</span><div style="flex:1;height:8px;background:#eef;border-radius:4px;overflow:hidden"><div style="width:'+pct+'%;height:100%;background:linear-gradient(90deg,#35deF5,#7a4df0)"></div></div><span style="width:128px;font-size:11px;color:#789">'+r[2]+'/'+r[1]+'·'+pct+'%'+(r[3]?'·薄弱'+r[3]:'')+'</span></div>'});
  h+='</div>';
  h+='<div id="briefAI" style="margin-top:10px;background:#f6f6ee;border:1px solid #ddd;border-radius:8px;padding:10px 12px;font-size:13px;line-height:1.8;white-space:pre-wrap">'+esc(briefTxt()||'⏳ 教练正在写今日简报…约10~30秒(每天只写一次, 之后全天秒看)')+'</div>';
  h+='<div style="margin-top:8px;text-align:right;font-size:12px;color:#678"><span style="cursor:pointer" onclick="briefGen(true)">🔄 重新生成</span> · <span style="cursor:pointer" onclick="briefClose()">收起 ▲</span></div>';
