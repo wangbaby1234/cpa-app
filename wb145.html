@@ -164,6 +164,19 @@ function pool(){const subs=PLAN[SET.track]||PLAN.CPA;
  return DB.k.filter(ok).concat(DB.e.filter(ok)).filter(x=>SET.subj==="全部"||x.subject===SET.subj)}
 function updPoolCnt(){const el=g("poolCnt");if(!el)return;
  el.textContent=(DB.k.length||DB.e.length)?("当前轨道「"+SET.track+"」可见 "+pool().length+" 条"):"导入数据包后显示范围条数"}
+/*s38*/
+function weakStart(){var t=today(),cand=[];
+ pool().forEach(function(x){if(x._t!=="k")return;var p=PR[x.id];if(!p||!p.seen)return;
+  if((p.box||0)<=1||((p.w||0)>0)||(p.due&&p.due<=t))cand.push(x)});
+ if(!cand.length){toast("暂无薄弱卡: 先背一批新卡, 系统会自动记录你的薄弱点");return}
+ for(var i=cand.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var tp=cand[i];cand[i]=cand[j];cand[j]=tp}
+ var pick=cand.slice(0,30);
+ if(si<sess.length)sessStack.push({sess:sess,si:si});
+ sess=pick;si=0;go("study");toast("🎯 薄弱加强: "+pick.length+" 张(完成自动返回)")}
+window.weakStart=weakStart;
+try{var wb=document.createElement('button');wb.textContent='🎯';wb.title='薄弱加强特训(30张)';
+ wb.style.cssText='position:fixed;left:12px;bottom:80px;width:46px;height:46px;border-radius:50%;border:none;background:#fff;box-shadow:0 2px 10px rgba(0,0,0,.18);font-size:20px;z-index:998;cursor:pointer';
+ wb.onclick=function(){weakStart()};document.body.appendChild(wb)}catch(e){}
 function buildSess(){const t=today();
  if(TODAY.date!==t){TODAY={date:t,newDone:0,bonus:0,st:TODAY.st||0,last:TODAY.last||""};saveDay()}
  const P=pool().filter(x=>x._t==="k"||(x._t==="e"&&PR[x.id]&&PR[x.id].seen&&PR[x.id].due));
@@ -881,6 +894,53 @@ btn.onclick=function(){
  wrap.classList.add('open');
  setTimeout(function(){inBox.focus()},260)};
 document.body.appendChild(btn);
+/*s39*/
+var BRIEF_SYS='你是CPA备考教练。根据学员学情快照输出今日简报, 总长≤300字, 分三段:\n【今日方案】结合薄弱与到期, 给科目+新卡/复习数量+先后顺序, 40~60分钟可完成\n【薄弱加强】指出最薄弱的1~2科, 具体到练什么、怎么练\n【考情速览】该学员主攻科目近年CPA高频考点与命题趋势2~3条\n只给干货, 不要客套。';
+function briefCalc(){var t=b1Day(),tot=0,seen=0,due=0,per={};
+ pool().forEach(function(x){if(x._t!=='k')return;var sb=x.subject||'其他';
+  if(!per[sb])per[sb]=[0,0,0];per[sb][0]++;tot++;
+  var p=PR[x.id];if(p&&p.seen){seen++;per[sb][1]++;
+   if(((p.box||0)<=1)||(p.w||0)>0)per[sb][2]++;}
+  if(p&&p.seen&&p.due&&p.due<=t)due++});
+ var rows=[];for(var sb in per)rows.push([sb,per[sb][0],per[sb][1],per[sb][2]]);
+ rows.sort(function(a,b){return b[3]-a[3]});
+ return {tot:tot,seen:seen,due:due,rows:rows,
+  day:(new Date().getMonth()+1)+'月'+new Date().getDate()+'日'}}
+function briefKey(){return 'brief_'+b1Day()}
+function briefTxt(){try{var v=localStorage.getItem(briefKey());if(v)return (JSON.parse(v).t)||''}catch(e){}return ''}
+function briefRender(){var b=document.getElementById('briefBody');if(!b)return;
+ var d=briefCalc(),h='';
+ h+='<div style="font-size:13px;line-height:1.9">📅 <b>'+d.day+'</b> · 总进度 <b>'+d.seen+'</b>/'+d.tot+' ('+(d.tot?Math.round(d.seen/d.tot*100):0)+'%) · 今日新卡 <b>'+(TODAY.newDone||0)+'</b>/'+(SET.daily||0)+' · 到期待复习 <b>'+d.due+'</b></div>';
+ h+='<div style="margin-top:8px">';
+ d.rows.slice(0,6).forEach(function(r){var pct=r[0]?Math.round(r[1]/r[0]*100):0;
+  h+='<div style="display:flex;align-items:center;gap:6px;margin:3px 0"><span style="width:56px;font-size:12px">'+esc(r[0])+'</span><div style="flex:1;height:8px;background:#eef;border-radius:4px;overflow:hidden"><div style="width:'+pct+'%;height:100%;background:linear-gradient(90deg,#35deF5,#7a4df0)"></div></div><span style="width:104px;font-size:11px;color:#789">'+pct+'%'+(r[3]?'·薄弱'+r[3]:'')+'</span></div>'});
+ h+='</div>';
+ h+='<div id="briefAI" style="margin-top:10px;background:#f6f6ee;border:1px solid #ddd;border-radius:8px;padding:10px 12px;font-size:13px;line-height:1.8;white-space:pre-wrap">'+esc(briefTxt()||'⏳ 教练正在写今日简报…约10~30秒(每天只写一次, 之后全天秒看)')+'</div>';
+ h+='<div style="margin-top:8px;text-align:right;font-size:12px;color:#678"><span style="cursor:pointer" onclick="briefGen(true)">🔄 重新生成</span> · <span style="cursor:pointer" onclick="briefClose()">收起 ▲</span></div>';
+ b.innerHTML=h}
+function briefGen(force){
+ if(!force&&briefTxt()){briefRender();return}
+ var ta=document.getElementById('briefAI');if(ta)ta.textContent='⏳ 教练正在写今日简报…约10~30秒';
+ b1Ask('glm-4-flash',BRIEF_SYS,'请写今日简报。主攻: '+(SET.track||'CPA')+'。').then(function(t){
+  try{localStorage.setItem(briefKey(),JSON.stringify({t:t}))}catch(e){}
+  briefRender()}).catch(function(e){var tb=document.getElementById('briefAI');
+  if(tb)tb.textContent='简报生成失败: '+String(e.message||e)+' (403请☁️退出重登)'})}
+function briefOpen(){var w=document.getElementById('briefWrap');if(!w)return;
+ w.style.display='block';briefRender();if(!briefTxt())briefGen(false)}
+function briefClose(){var w=document.getElementById('briefWrap');if(w)w.style.display='none'}
+window.briefOpen=briefOpen;window.briefGen=briefGen;
+(function(){try{
+ var w=document.createElement('div');w.id='briefWrap';
+ w.style.cssText='display:none;position:fixed;left:10px;right:10px;bottom:150px;max-width:430px;margin:0 auto;background:#fff;border-radius:14px;box-shadow:0 8px 30px rgba(0,0,0,.22);padding:14px 16px;z-index:997;max-height:62vh;overflow:auto';
+ w.innerHTML='<div style="font-weight:700;font-size:14px;margin-bottom:6px">📊 每日学习简报</div><div id="briefBody"></div>';
+ document.body.appendChild(w);
+ var bb=document.createElement('button');bb.textContent='📊';bb.title='每日简报(进度/薄弱/方案/考情)';
+ bb.style.cssText='position:fixed;left:12px;bottom:134px;width:46px;height:46px;border-radius:50%;border:none;background:#fff;box-shadow:0 2px 10px rgba(0,0,0,.18);font-size:20px;z-index:998;cursor:pointer';
+ bb.onclick=function(){(w.style.display==='block')?briefClose():briefOpen()};
+ document.body.appendChild(bb);
+ setTimeout(function(){try{if(localStorage.getItem('briefOpenDate')!==b1Day()){localStorage.setItem('briefOpenDate',b1Day());briefOpen()}}catch(e){}},1800);
+}catch(e){}})();
+
 /*s37aid*/
 window.b1Auto=function(){b1Hook(false,true)};
 function b1Ctx(){try{var per={},seen=0,today=new Date().toISOString().slice(0,10);
@@ -897,6 +957,22 @@ mk('🎯 攻薄弱','请根据学情快照找出我最薄弱的科目, 分析原
 mk('📈 学情分析','请分析我的学习数据: 进度是否健康、薄弱点在哪、按当前节奏能否按期完成备考, 给出调整建议。');
 inBox.parentNode.insertBefore(row,inBox)})();}catch(e){}
 try{var _ab=document.getElementById('aiBtn');if(_ab)_ab.title='AI学习助手(已自动携带你的学情数据)';}catch(e){}
+/*s38*/
+(function(){try{
+ if(location.protocol==='file:')return;
+ if(localStorage.getItem('aidPackV')==='1')return;
+ fetch('wb_aid_v1.json',{cache:'no-cache'}).then(function(r){return r.ok?r.json():null}).then(function(j){
+  if(!j||!j.m)return;var ids=Object.keys(j.m);
+  idbOpen().then(function(d){if(!d)return;
+   (function chunk(off){
+    if(off>=ids.length){try{localStorage.setItem('aidPackV','1')}catch(e){};if(typeof toast==='function')toast('📚 口诀包入库: '+ids.length+' 张全秒开');return}
+    var t2=d.transaction('kv','readwrite'),st=t2.objectStore('kv');
+    for(var i=off;i<Math.min(off+2000,ids.length);i++){(function(id2){var k2='aid_'+id2;var q=st.get(k2);q.onsuccess=function(){if(!q.result)st.put(j.m[id2],k2)}})(ids[i])}
+    t2.oncomplete=function(){setTimeout(function(){chunk(off+2000)},30)};t2.onerror=function(){};
+   })(0)
+  })
+ }).catch(function(e){})
+}catch(e){}})();
 /*s36b1*/
 function b1Day(){return new Date().toISOString().slice(0,10)}
 function b1Used(){var d=b1Day();if(localStorage.getItem('b1Day')!==d){localStorage.setItem('b1Day',d);localStorage.setItem('b1Cnt','0')}return +(localStorage.getItem('b1Cnt')||0)}
