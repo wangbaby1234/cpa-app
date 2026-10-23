@@ -549,7 +549,7 @@ function sess(){try{var o=JSON.parse(localStorage.getItem("sb-johsavpaqsisjozicu
 function uidOf(x){if(x.user&&x.user.id)return x.user.id;try{var p=x.access_token.split(".")[1].replace(/-/g,"+").replace(/_/g,"/");while(p.length%4)p+="=";return JSON.parse(atob(p)).sub||null}catch(e){return null}}
 function mark(k){try{DIRTY=1;if(TMR)clearTimeout(TMR);TMR=setTimeout(function(){TMR=null;push()},8000)}catch(e){}}
 window.wbMarkDirty=mark;
-function collect(){var o={};try{for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);if(k&&k.slice(0,3)!=="sb-")o[k]=localStorage.getItem(k)}}catch(e){}return o}
+function collect(){var o={};try{for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);if(k&&k.slice(0,3)!=="sb-"&&k!=="aidPackV"){var v=localStorage.getItem(k);if(v&&v.length<2000000)o[k]=v}}}/*s42b*/catch(e){}return o}
 function push(){try{if(!U)return;var x=sess();if(!x)return;var u=uidOf(x);if(!u)return;
  fetch(U+"/rest/v1/wb_sync",{method:"POST",headers:{"Content-Type":"application/json","apikey":AK,"Authorization":"Bearer "+x.access_token,"Prefer":"resolution=merge-duplicates,return=minimal"},body:JSON.stringify([{user_id:u,payload:collect()}])})
  .then(function(r){if(!r.ok)throw new Error("HTTP "+r.status);BAD=0;DIRTY=0;if(!PUSHED){PUSHED=1;if(window.toast)toast("☁ 云保险柜已开(改动后静默上云)")}})
