@@ -141,7 +141,7 @@ function esc(s){return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"
 function pad(n){return String(n).padStart(2,"0")}
 function today(d){d=d||new Date();return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate())}
 function addDays(n){const d=new Date();d.setDate(d.getDate()+n);return today(d)}
-function save(k,v){try{localStorage.setItem(k,JSON.stringify(v));if(k==="wb_set_v1"&&v&&typeof v.exams==="object"&&Object.keys(v.exams).length)localStorage.setItem("wb_exams_v1",JSON.stringify(v.exams))}catch(e){}}
+function save(k,v){try{localStorage.setItem(k,JSON.stringify(v));if(k==="wb_set_v1"&&v&&typeof v.exams==="object"&&Object.keys(v.exams).length)localStorage.setItem("wb_exams_v1",JSON.stringify(v.exams))}catch(e){}if(k&&String(k).slice(0,3)==="wb_"&&window.wbMarkDirty){try{wbMarkDirty(k)}catch(e){}}}
 function load(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}}
 function savePR(){save("wb_pr_v1",PR)}
 function toast(m){const t=g("toast");t.textContent=m;t.style.display="block";clearTimeout(t._h);t._h=setTimeout(()=>t.style.display="none",2400)}
@@ -539,7 +539,39 @@ function fixRoute(){
 var tm;new MutationObserver(function(){clearTimeout(tm);tm=setTimeout(fixRoute,400)}).observe(document.body,{childList:true,subtree:true});
 fixRoute();
 })();
-</script><script>window.SUPABASE_CONFIG={"url": "https://johsavpaqsisjozicurp.supabase.co", "anon": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpvaHNhdnBhcXNpc2pvemljdXJwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIzOTk3ODEsImV4cCI6MjEwNzk3NTc4MX0.UxSalWjb3qlxQMcjmkNZI19lk60S9N9YLEGtYjJYeDk", "auth": "password"}</script><script>
+</script><script>window.SUPABASE_CONFIG={"url": "https://johsavpaqsisjozicurp.supabase.co", "anon": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpvaHNhdnBhcXNpc2pvemljdXJwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIzOTk3ODEsImV4cCI6MjEwNzk3NTc4MX0.UxSalWjb3qlxQMcjmkNZI19lk60S9N9YLEGtYjJYeDk", "auth": "password"}</script>
+<script id="s42sync">
+/*s42 云保险柜: 改动后闲置8s整态上云 + 开机静默合并拉回(按t新者胜, 永不覆盖式破坏)*/
+(function(){
+var U=(window.SUPABASE_CONFIG||{}).url||"", AK=(window.SUPABASE_CONFIG||{}).anon||"";
+var TMR=null, DIRTY=0, PUSHED=0, BAD=0;
+function sess(){try{var o=JSON.parse(localStorage.getItem("sb-johsavpaqsisjozicurp-auth-token")||"null");return (o&&o.access_token&&o.access_token.length>40)?o:null}catch(e){return null}}
+function uidOf(x){if(x.user&&x.user.id)return x.user.id;try{var p=x.access_token.split(".")[1].replace(/-/g,"+").replace(/_/g,"/");while(p.length%4)p+="=";return JSON.parse(atob(p)).sub||null}catch(e){return null}}
+function mark(k){try{DIRTY=1;if(TMR)clearTimeout(TMR);TMR=setTimeout(function(){TMR=null;push()},8000)}catch(e){}}
+window.wbMarkDirty=mark;
+function collect(){var o={};try{for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);if(k&&k.slice(0,3)!=="sb-")o[k]=localStorage.getItem(k)}}catch(e){}return o}
+function push(){try{if(!U)return;var x=sess();if(!x)return;var u=uidOf(x);if(!u)return;
+ fetch(U+"/rest/v1/wb_sync",{method:"POST",headers:{"Content-Type":"application/json","apikey":AK,"Authorization":"Bearer "+x.access_token,"Prefer":"resolution=merge-duplicates,return=minimal"},body:JSON.stringify([{user_id:u,payload:collect()}])})
+ .then(function(r){if(!r.ok)throw new Error("HTTP "+r.status);BAD=0;DIRTY=0;if(!PUSHED){PUSHED=1;if(window.toast)toast("☁ 云保险柜已开(改动后静默上云)")}})
+ .catch(function(e){if(++BAD<=2&&window.toast)toast("☁ 同步失败: "+e.message+"(稍后自动重试)")})}catch(e){}}
+window.wbSyncNow=push;
+function pull(){try{if(!U)return;var x=sess();if(!x)return;var u=uidOf(x);if(!u)return;
+ fetch(U+"/rest/v1/wb_sync?select=payload&user_id=eq."+u,{headers:{apikey:AK,Authorization:"Bearer "+x.access_token}})
+ .then(function(r){return r.ok?r.json():Promise.reject(new Error("HTTP "+r.status))})
+ .then(function(rows){if(!rows||!rows.length)return;var pl=rows[0].payload||{},n=0;
+  try{var c=pl["wb_pr_v1"];if(c){var cm=JSON.parse(c),lm=null;try{lm=JSON.parse(localStorage.getItem("wb_pr_v1")||"{}")}catch(e){lm={}};
+   for(var id in cm){var a=lm[id],b=cm[id];if(!a||((b.t||0)>(a.t||0))){lm[id]=b;n++}}
+   if(n){localStorage.setItem("wb_pr_v1",JSON.stringify(lm));if(window.PR)for(var i2 in lm)PR[i2]=lm[i2];if(window.savePR)savePR()}
+  }}catch(e){}
+  try{var cs=pl["wb_set_v1"];if(cs&&localStorage.getItem("wb_set_v1")===null){localStorage.setItem("wb_set_v1",cs);try{SET=JSON.parse(cs);if(window.renderSet)renderSet();if(window.updHead)updHead()}catch(e){}}}catch(e){}
+  try{for(var k2 in pl){if(k2==="wb_pr_v1"||k2==="wb_set_v1")continue;if(localStorage.getItem(k2)===null&&pl[k2]!=null)localStorage.setItem(k2,pl[k2])}}catch(e){}
+  if(n>0&&window.toast)toast("☁ 云端并入 "+n+" 条进度(建议刷新一次页面全量生效)")})
+ .catch(function(){})}catch(e){}}
+window.wbPullNow=pull;
+setTimeout(function(){try{if(sess())pull()}catch(e){}},2500);
+if(document.addEventListener)document.addEventListener("visibilitychange",function(){try{if(document.hidden&&DIRTY)push()}catch(e){}});
+})();
+</script><script>
 (function(){
 var C=window.SUPABASE_CONFIG;if(!C)return;
 function load(){var s=document.createElement('script');
