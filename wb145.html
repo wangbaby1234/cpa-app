@@ -101,6 +101,17 @@ summary{font-size:14px;cursor:pointer;line-height:1.5}
   <button class="btn bad" onclick="resetPR()">清空进度</button>
   <div class="muted" style="margin-top:8px">导出=把进度＋设置存成备份文件（JSON，供机器恢复，无需阅读）；并入=灌回备份。换包/升级/换手机前先导出。</div></div>
 </section>
+<section id="pgDash" class="hidden"><!--s40-->
+ <div class="card"><h3>📊 每日学习看板</h3>
+  <div id="dashHead"></div>
+  <div id="dashBars" style="margin-top:6px"></div>
+  <div id="dashAI" style="margin-top:10px;background:#f6f6ee;border:1px solid #ddd;border-radius:8px;padding:10px 12px;font-size:13px;line-height:1.8;white-space:pre-wrap"></div>
+  <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">
+   <button class="btn gray" style="font-size:12px;padding:5px 10px" onclick="briefGen(true)">🔄 重写简报</button>
+   <button class="btn gray" style="font-size:12px;padding:5px 10px" onclick="weakStart()">🎯 薄弱特训30张</button>
+  </div>
+ </div>
+</section>
 </div>
 <nav>
  <button data-p="study" class="on" onclick="go('study')"><span class="ic">📖</span>背卡</button>
@@ -108,7 +119,7 @@ summary{font-size:14px;cursor:pointer;line-height:1.5}
  <button data-p="wrong" onclick="go('wrong')"><span class="ic">❌</span>错题</button>
  <button data-p="star" onclick="go('star')"><span class="ic">⭐</span>收藏</button>
  <button data-p="plan" onclick="go('plan')"><span class="ic">📅</span>规划</button>
- <button data-p="more" onclick="go('more')"><span class="ic">⚙️</span>更多</button>
+ <button data-p="dash" onclick="go('dash')"><span class="ic">📊</span>看板</button><button data-p="more" onclick="go('more')"><span class="ic">⚙️</span>更多</button>
 </nav>
 <div id="toast"></div>
 <script>
@@ -355,12 +366,12 @@ function renderSet(){g("sTrack").innerHTML=["CPA","中级","税务师"].map(t=>'
  updPoolCnt()}
 function setTrack(t){SET.track=t;SET.subj="全部";save("wb_set_v1",SET);pr.subj="全部";pr.list=[];renderSet();renderPSubj();sess=[];si=0;sessStack=[];hlPill()}
 function setSubj(s){SET.subj=s;save("wb_set_v1",SET);renderSet();sess=[];si=0;sessStack=[]}
-function go(p){["study","prac","wrong","star","plan","more"].forEach(t=>{g("pg"+t.charAt(0).toUpperCase()+t.slice(1)).classList.toggle("hidden",t!==p)});
+function go(p){["study","prac","wrong","star","plan","more","dash"].forEach(t=>{g("pg"+t.charAt(0).toUpperCase()+t.slice(1)).classList.toggle("hidden",t!==p)});
  document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("on",b.getAttribute("data-p")===p));
  if(p==="study"){if(!sess.length)buildSess();showCard()}
  if(p==="prac"){renderPSubj();renderPType();renderPrac()}
  if(p==="wrong")renderWrong(); if(p==="star")renderStar();
- if(p==="plan"){renderPlan();renderRoute()} if(p==="more")audit()}
+ if(p==="plan"){renderPlan();renderRoute()} if(p==="more")audit();if(p==="dash")renderDash()}
 (async function(){renderSet();renderPSubj();renderPType();PR=load("wb_pr_v1")||{};
  const p=await packLoad();if(p&&p.k){DB={k:p.k,e:p.e,ver:p.v||"未知",meta:p.meta||null};
   if(p.meta&&p.meta.expected)REF=p.meta.expected;tagItems()}
@@ -908,6 +919,14 @@ function briefCalc(){var t=b1Day(),tot=0,seen=0,due=0,per={};
   day:(new Date().getMonth()+1)+'月'+new Date().getDate()+'日'}}
 function briefKey(){return 'brief_'+b1Day()}
 function briefTxt(){try{var v=localStorage.getItem(briefKey());if(v)return (JSON.parse(v).t)||''}catch(e){}return ''}
+function renderDash(){var d=briefCalc(),h='',bh='';
+ h+='<div style="font-size:13px;line-height:2">📅 <b>'+d.day+'</b> · 总进度 <b>'+d.seen+'</b>/'+d.tot+' ('+(d.tot?Math.round(d.seen/d.tot*100):0)+'%) · 今日新卡 <b>'+(TODAY.newDone||0)+'</b>/'+(SET.daily||0)+' · 到期待复习 <b>'+d.due+'</b></div>';
+ d.rows.slice(0,8).forEach(function(r){var pct=r[0]?Math.round(r[1]/r[0]*100):0;
+  bh+='<div style="display:flex;align-items:center;gap:6px;margin:3px 0"><span style="width:56px;font-size:12px">'+esc(r[0])+'</span><div style="flex:1;height:8px;background:#eef;border-radius:4px;overflow:hidden"><div style="width:'+pct+'%;height:100%;background:linear-gradient(90deg,#35deF5,#7a4df0)"></div></div><span style="width:110px;font-size:11px;color:#789">'+pct+'%'+(r[3]?'·薄弱'+r[3]:'')+'</span></div>'});
+ var he=g("dashHead"),be=g("dashBars");if(he)he.innerHTML=h;if(be)be.innerHTML=bh;
+ var ta=g("dashAI");if(ta)ta.textContent=briefTxt()||'⏳ 教练正在写今日简报…约10~30秒';
+ if(!briefTxt())briefGen(false)}
+window.renderDash=renderDash;
 function briefRender(){var b=document.getElementById('briefBody');if(!b)return;
  var d=briefCalc(),h='';
  h+='<div style="font-size:13px;line-height:1.9">📅 <b>'+d.day+'</b> · 总进度 <b>'+d.seen+'</b>/'+d.tot+' ('+(d.tot?Math.round(d.seen/d.tot*100):0)+'%) · 今日新卡 <b>'+(TODAY.newDone||0)+'</b>/'+(SET.daily||0)+' · 到期待复习 <b>'+d.due+'</b></div>';
@@ -919,11 +938,11 @@ function briefRender(){var b=document.getElementById('briefBody');if(!b)return;
  h+='<div style="margin-top:8px;text-align:right;font-size:12px;color:#678"><span style="cursor:pointer" onclick="briefGen(true)">🔄 重新生成</span> · <span style="cursor:pointer" onclick="briefClose()">收起 ▲</span></div>';
  b.innerHTML=h}
 function briefGen(force){
- if(!force&&briefTxt()){briefRender();return}
- var ta=document.getElementById('briefAI');if(ta)ta.textContent='⏳ 教练正在写今日简报…约10~30秒';
+ if(!force&&briefTxt()){briefRender();renderDash();return}
+ var ta=document.getElementById('dashAI')||document.getElementById('briefAI');if(ta)ta.textContent='⏳ 教练正在写今日简报…约10~30秒(每天只写一次, 全天秒看)';
  b1Ask('glm-4-flash',BRIEF_SYS,'请写今日简报。主攻: '+(SET.track||'CPA')+'。').then(function(t){
   try{localStorage.setItem(briefKey(),JSON.stringify({t:t}))}catch(e){}
-  briefRender()}).catch(function(e){var tb=document.getElementById('briefAI');
+  briefRender();renderDash()}).catch(function(e){var tb=document.getElementById('dashAI')||document.getElementById('briefAI');
   if(tb)tb.textContent='简报生成失败: '+String(e.message||e)+' (403请☁️退出重登)'})}
 function briefOpen(){var w=document.getElementById('briefWrap');if(!w)return;
  w.style.display='block';briefRender();if(!briefTxt())briefGen(false)}
@@ -936,9 +955,8 @@ window.briefOpen=briefOpen;window.briefGen=briefGen;
  document.body.appendChild(w);
  var bb=document.createElement('button');bb.textContent='📊';bb.title='每日简报(进度/薄弱/方案/考情)';
  bb.style.cssText='position:fixed;left:12px;bottom:134px;width:46px;height:46px;border-radius:50%;border:none;background:#fff;box-shadow:0 2px 10px rgba(0,0,0,.18);font-size:20px;z-index:998;cursor:pointer';
- bb.onclick=function(){(w.style.display==='block')?briefClose():briefOpen()};
- document.body.appendChild(bb);
- setTimeout(function(){try{if(localStorage.getItem('briefOpenDate')!==b1Day()){localStorage.setItem('briefOpenDate',b1Day());briefOpen()}}catch(e){}},1800);
+ ;
+ setTimeout(function(){try{if(localStorage.getItem('briefOpenDate')!==b1Day()){localStorage.setItem('dashOpenDate',b1Day());go('dash')}}catch(e){}},1800);
 }catch(e){}})();
 
 /*s37aid*/
