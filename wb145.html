@@ -540,6 +540,116 @@ var tm;new MutationObserver(function(){clearTimeout(tm);tm=setTimeout(fixRoute,4
 fixRoute();
 })();
 </script><script>window.SUPABASE_CONFIG={"url": "https://johsavpaqsisjozicurp.supabase.co", "anon": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpvaHNhdnBhcXNpc2pvemljdXJwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIzOTk3ODEsImV4cCI6MjEwNzk3NTc4MX0.UxSalWjb3qlxQMcjmkNZI19lk60S9N9YLEGtYjJYeDk", "auth": "password"}</script>
+<style id="s43css">
+#s43btn{position:fixed;left:18px;bottom:88px;z-index:99980;width:46px;height:46px;border-radius:50%;border:none;background:#6d28d9;color:#fff;font-size:19px;box-shadow:0 4px 14px rgba(0,0,0,.25);cursor:pointer}
+#s43ov{position:fixed;inset:0;background:rgba(15,23,42,.55);z-index:99990;display:none;overflow:auto}
+#s43ov .s43card{background:#fff;max-width:760px;margin:4vh auto;border-radius:14px;padding:18px;max-height:92vh;overflow:auto;font-size:14px}
+.s43chip{display:inline-block;padding:6px 12px;margin:3px;border:1px solid #e2e8f0;border-radius:999px;cursor:pointer;background:#fff}
+.s43chip.on{background:#6d28d9;color:#fff;border-color:#6d28d9}
+.s43opt{display:block;width:100%;text-align:left;padding:10px 12px;margin:6px 0;border:1px solid #e2e8f0;border-radius:10px;background:#fff;cursor:pointer}
+.s43opt.on{border-color:#6d28d9;background:#f5f3ff}
+.s43pal{display:inline-block;min-width:26px;height:26px;line-height:26px;text-align:center;margin:2px;border-radius:6px;background:#f1f5f9;cursor:pointer;font-size:12px;padding:0 4px}
+.s43pal.ans{background:#6d28d9;color:#fff}
+.s43row{padding:8px 6px;border-bottom:1px solid #f1f5f9;cursor:pointer}
+.s43det{background:#f8fafc;border-radius:8px;padding:8px;margin:4px 0;display:none}
+</style>
+<script id="s43ex">
+(function(){
+var E={list:[],ans:{},i:0,left:0,tm:null,subj:"全部",n:20,mins:30,scope:"learned",done:false},RG=[];
+function gk(id){return document.getElementById(id)}
+function hasDB(){try{if(DB&&DB.e&&DB.e.length)return true}catch(e){}return false}
+function kind(x){try{return exKind(x)}catch(e){return"subj"}}
+function subjects(){var m={},r=[];if(!hasDB())return r;DB.e.forEach(function(x){if(x.subject&&!m[x.subject]){m[x.subject]=1;r.push(x.subject)}});return r.sort()}
+function toast2(m){try{toast(m)}catch(e){}}
+function esc2(x){return String(x==null?"":x).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}
+function cont(x){try{return flatWrap(x.content)}catch(e){return esc2(x.content)}}
+function prHas(id){try{return !!PR[id]}catch(e){return false}}
+function dstr(){try{return today()}catch(e){return new Date().toISOString().slice(0,10)}}
+function fmt(t){var m=Math.floor(t/60),s2=t%60;return(m<10?"0":"")+m+":"+(s2<10?"0":"")+s2}
+function pool(){var a=[];DB.e.forEach(function(x){var k=kind(x);if(k!=="choice"&&k!=="judge")return;if(E.subj!=="全部"&&x.subject!==E.subj)return;if(E.scope==="learned"&&!prHas(x.id))return;a.push(x)});
+ for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1)),t=a[i];a[i]=a[j];a[j]=t}return a}
+function chips(arr,cur,fn){return arr.map(function(v){return '<span class="s43chip'+(String(v)===String(cur)?' on':'')+'" onclick="'+fn+'(\''+v+'\')">'+v+'</span>'}).join("")}
+window.s43Subj=function(v){E.subj=v;renderHome()};
+window.s43N=function(v){E.n=parseInt(v)||20;renderHome()};
+window.s43M=function(v){E.mins=parseInt(v)||30;renderHome()};
+window.s43Scope=function(v){E.scope=v;renderHome()};
+function renderHome(){if(!gk("s43body"))return;
+ var pn=hasDB()?pool().length:0;
+ var hist=[];try{hist=JSON.parse(localStorage.getItem("wb_examhist_v1")||"[]")}catch(e){}
+ var hh=hist.slice(-5).reverse().map(function(h){return '<div class="muted" style="font-size:12px">'+esc2(h.d)+'　'+esc2(h.s)+'　'+h.n+'题　答对'+h.c+'（'+h.pc+'%）</div>'}).join("");
+ gk("s43body").innerHTML='<h3 style="margin:0 0 8px">📝 模考场 <span class="muted" style="font-size:12px;font-weight:400">客观题·自动判分</span></h3>'
+ +'<div class="muted" style="margin:6px 0 2px">科目</div>'+chips(["全部"].concat(subjects()),E.subj,"s43Subj")
+ +'<div class="muted" style="margin:10px 0 2px">题量</div>'+chips([10,20,30,50],E.n,"s43N")
+ +'<div class="muted" style="margin:10px 0 2px">时长（分钟）</div>'+chips([15,30,45,60],E.mins,"s43M")
+ +'<div class="muted" style="margin:10px 0 2px">范围</div>'
+ +'<span class="s43chip'+(E.scope==="learned"?' on':'')+'" onclick="s43Scope(\'learned\')">只考学过的</span>'
+ +'<span class="s43chip'+(E.scope==="all"?' on':'')+'" onclick="s43Scope(\'all\')">全部题库</span>'
+ +'<div class="muted" style="margin:10px 0">'+(hasDB()?("可用题池 "+pn+" 道"+(E.scope==="learned"?"（学过的客观题）":"")):"⚠ 未导入数据包——先导入 wb_data_v1.json")+'</div>'
+ +(hh?'<div style="border-top:1px solid #f1f5f9;padding-top:8px;margin:8px 0"><b style="font-size:13px">近期成绩</b>'+hh+'</div>':"")
+ +'<button class="btn" style="width:100%;padding:10px" onclick="s43Start()">开始模考</button>'}
+window.s43Start=function(){if(!hasDB()){toast2("先导入数据包再开考");return}
+ var p=pool();if(!p.length){toast2("该范围没有客观题——换科目或切到全部题库");return}
+ if(p.length<E.n){toast2("题池只有"+p.length+"道, 已全部上卷");E.n=p.length}
+ E.list=p.slice(0,E.n);E.ans={};E.i=0;E.left=E.mins*60;E.done=false;RG=[];
+ clearInterval(E.tm);E.tm=setInterval(tick,1000);renderExam()}
+function tick(){E.left--;var c=gk("s43clk");if(c){c.textContent="⏱ "+fmt(Math.max(0,E.left));c.style.color=E.left<60?"#dc2626":"#0f172a"}if(E.left<=0){toast2("时间到, 自动交卷");finish()}}
+function renderExam(){var x=E.list[E.i],k=kind(x);
+ var pal=E.list.map(function(q,i){return '<span class="s43pal'+(E.ans[q.id]?' ans':'')+'" onclick="s43Jump('+i+')">'+(i+1)+'</span>'}).join("");
+ var h='<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">'
+ +'<b>第 '+(E.i+1)+' / '+E.list.length+' 题</b><span id="s43clk" style="font-weight:700">⏱ '+fmt(E.left)+'</span>'
+ +'<span><button class="btn gray" onclick="s43Quit()">放弃</button> <button class="btn" onclick="s43Submit()">交卷</button></span></div>'
+ +'<div style="margin:10px 0">'+pal+'</div><div style="border-top:1px solid #f1f5f9;padding-top:10px">'+cont(x)
+ +(x.require?'<div style="color:#64748b;margin-top:6px"><b>要求：</b>'+esc2(x.require)+'</div>':'')
+ +'<div class="muted" style="margin:6px 0 2px;font-size:12px">'+esc2(x.subject||"")+' · '+(k==="judge"?"判断题":(String(x.answer).length>1?"多选题":"单选题"))+'</div>';
+ if(k==="judge"){h+='<button class="s43opt'+(E.ans[x.id]==="对"?' on':'')+'" onclick="s43Judge(1)">√ 对</button><button class="s43opt'+(E.ans[x.id]==="错"?' on':'')+'" onclick="s43Judge(0)">× 错</button>'}
+ else{x.options.forEach(function(op,i){var L=String.fromCharCode(65+i),on=(E.ans[x.id]||"").indexOf(L)>=0;
+  h+='<button class="s43opt'+(on?' on':'')+'" onclick="s43Pick('+i+')"><b>'+L+'.</b> '+esc2(op)+'</button>'});
+  h+='<div class="muted" style="font-size:12px">'+(String(x.answer).length>1?"多选: 点选所有对的选项(再点可取消)":"单选: 点一下即选, 再点取消")+'</div>'}
+ h+='<div style="display:flex;justify-content:space-between;margin-top:10px"><button class="btn gray" onclick="s43Step(-1)">← 上一题</button><button class="btn gray" onclick="s43Step(1)">下一题 →</button></div></div>';
+ gk("s43body").innerHTML=h}
+window.s43Pick=function(i){var x=E.list[E.i],L=String.fromCharCode(65+i),cur=E.ans[x.id]||"",a=cur?cur.split(""):[];var p=a.indexOf(L);if(p>=0)a.splice(p,1);else a.push(L);a.sort();E.ans[x.id]=a.join("");renderExam()}
+window.s43Judge=function(v){var x=E.list[E.i];E.ans[x.id]=v?"对":"错";renderExam()}
+window.s43Jump=function(i){E.i=Math.max(0,Math.min(E.list.length-1,i));renderExam()}
+window.s43Step=function(d){s43Jump(E.i+d)}
+function gradeQ(x){var a=E.ans[x.id]||"";if(!a)return 0;
+ if(kind(x)==="judge"){var m=({"对":"对","错":"错","√":"对","×":"错"})[String(x.answer).trim()]||"";return a===m?1:0}
+ var want=String(x.answer).trim().toUpperCase().split("").sort().join("");return a.split("").sort().join("")===want?1:0}
+window.s43Submit=function(){var un=0;E.list.forEach(function(q){if(!E.ans[q.id])un++});
+ if(un&&!confirm("还有 "+un+" 题未作答, 确定交卷?"))return;finish()}
+function finish(){clearInterval(E.tm);E.done=true;RG=[];var c=0;
+ E.list.forEach(function(x){var ok=gradeQ(x);if(ok)c++;
+  var ans=String(x.answer).trim();if(kind(x)==="judge")ans=({"对":"对","错":"错","√":"对","×":"错"})[ans]||ans;
+  RG.push({x:x,ok:ok,you:E.ans[x.id]||"",ans:ans})});
+ var wN=RG.length-c;
+ RG.forEach(function(r){if(r.ok)return;try{var p=PR[r.x.id]||{};p.w=(p.w||0)+1;p.t=Date.now();PR[r.x.id]=p}catch(e){}});
+ try{savePR()}catch(e){}
+ try{var hist=[];try{hist=JSON.parse(localStorage.getItem("wb_examhist_v1")||"[]")}catch(e){}
+  hist.push({d:dstr(),s:E.subj,n:E.list.length,c:c,pc:Math.round(c*100/E.list.length),secs:E.mins*60-Math.max(0,E.left)});
+  save("wb_examhist_v1",hist.slice(-20))}catch(e){}
+ renderRes(c,wN)}
+function renderRes(c,wN){var pct=Math.round(c*100/E.list.length),secs=E.mins*60-Math.max(0,E.left);
+ var rows=RG.map(function(r,i){var mk=r.ok?'<span style="color:#16a34a;font-weight:700">✓</span>':'<span style="color:#dc2626;font-weight:700">✗</span>';
+  return '<div class="s43row" onclick="s43Row(this)">'+mk+' 第'+(i+1)+'题 ['+esc2(r.x.subject||"")+'] '+esc2(String(r.x.content).slice(0,42))+'…'
+  +'<div class="s43det"><div>'+cont(r.x)+'</div><div style="margin-top:4px">你的答案：<b style="color:'+(r.ok?"#16a34a":"#dc2626")+'">'+esc2(r.you||"未答")+'</b>　正确答案：<b style="color:#16a34a">'+esc2(r.ans)+'</b></div></div></div>'}).join("");
+ gk("s43body").innerHTML='<div style="text-align:center;padding:8px 0"><div style="font-size:44px;font-weight:800;color:'+(pct>=60?"#16a34a":"#dc2626")+'">'+pct+'分</div>'
+ +'<div class="muted">答对 '+c+' / '+E.list.length+'　用时 '+fmt(secs)+'　错 '+wN+' 题</div>'
+ +'<div style="margin-top:6px;font-size:13px;color:#16a34a">'+(wN?"✅ 错题已入错题本并自动上云":"✅ 全对, 无错题入库")+'</div></div>'
+ +'<div style="border-top:1px solid #f1f5f9;margin-top:8px;padding-top:6px">'+rows+'</div>'
+ +'<button class="btn" style="width:100%;margin-top:10px" onclick="s43Quit()">收卷离场</button>';
+ toast2("模考完成: "+pct+"分")}
+window.s43Row=function(el){var d=el.querySelector(".s43det");d.style.display=d.style.display==="block"?"none":"block"}
+function quitGuard(){if(E.list.length&&!E.done)return confirm("模考进行中, 确定放弃本场?");return true}
+window.s43Quit=function(){if(!quitGuard())return;clearInterval(E.tm);E.list=[];renderHome()}
+function openOv(){gk("s43ov").style.display="block";if(E.list.length&&!E.done)renderExam();else renderHome()}
+function closeOv(){if(!quitGuard())return;if(E.list.length&&!E.done){clearInterval(E.tm);E.list=[]}gk("s43ov").style.display="none"}
+window.s43Toggle=function(){var ov=gk("s43ov");if(ov.style.display==="block")closeOv();else openOv()}
+function boot(){if(gk("s43btn"))return;
+ var b=document.createElement("button");b.id="s43btn";b.textContent="📝";b.title="模考场(客观题自动判分)";b.onclick=s43Toggle;document.body.appendChild(b);
+ var ov=document.createElement("div");ov.id="s43ov";ov.innerHTML='<div class="s43card" id="s43body"></div>';
+ ov.onclick=function(e){if(e.target===ov)closeOv()};document.body.appendChild(ov)}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",boot);else boot();
+})();
+</script>
 <script id="s42sync">
 /*s42 云保险柜: 改动后闲置8s整态上云 + 开机静默合并拉回(按t新者胜, 永不覆盖式破坏)*/
 (function(){
